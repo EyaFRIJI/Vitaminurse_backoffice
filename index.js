@@ -4,6 +4,8 @@ const port = 2000;
 const { connect } = require("mongoose");
 const User = require("./models/user");
 
+app.use(express.json());
+
 connect("mongodb://127.0.0.1:27017/VitamiNurseDB")
   .then(() => {
     console.log("connected to db");
