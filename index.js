@@ -50,6 +50,20 @@ app.post("/register", (request, response) => {
     });
 });
 
+app.post("/login", async (request, response) => {
+  const { email, mot_passe } = request.body;
+  const user = await User.findOne({ email });
+  if (user) {
+    if (user.mot_passe === mot_passe) {
+      response.send(user);
+    } else {
+      response.status(403).send("mot de passe incorrecte");
+    }
+  } else {
+    response.status(404).send("email incorrecte");
+  }
+});
+
 app.listen(port, () => {
   console.log(`server is running on port ${port}`);
 });
