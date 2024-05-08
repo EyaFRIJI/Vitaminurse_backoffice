@@ -3,6 +3,7 @@ const app = express();
 const port = 2000;
 const { connect } = require("mongoose");
 const User = require("./models/user");
+const T = require("tesseract.js");
 
 app.use(express.json());
 
@@ -62,6 +63,12 @@ app.post("/login", async (request, response) => {
   } else {
     response.status(404).send("email incorrecte");
   }
+});
+
+app.post("/analyse_ocr", async (request, response) => {
+  const produit = request.body.produit;
+  const text = await T.recognize(produit.images[0], undefined, {});
+  response.send(text.data.text);
 });
 
 app.listen(port, () => {
