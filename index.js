@@ -71,6 +71,44 @@ app.post("/analyse_ocr", async (request, response) => {
   response.send(text.data.text);
 });
 
+app.put("/user", async (req, res) => {
+  const {
+    id,
+    nom,
+    prenom,
+    poids,
+    taille,
+    date_naissance,
+    maladies,
+    allergies,
+    email,
+    mot_passe,
+    tel,
+  } = req.body;
+
+  const user = await User.findById(id);
+  if (user) {
+    Object.assign(user, {
+      nom,
+      prenom,
+      poids,
+      taille,
+      date_naissance,
+      maladies,
+      allergies,
+      email,
+      mot_passe: mot_passe != "" ? mot_passe : user.mot_passe,
+      tel,
+    });
+    user
+      .save()
+      .then((savedUser) => {
+        res.send(savedUser);
+      })
+      .catch((error) => res.status(500).send("error"));
+  } else res.status(404).send("not found");
+});
+
 app.listen(port, () => {
   console.log(`server is running on port ${port}`);
 });
