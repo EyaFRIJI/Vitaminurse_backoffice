@@ -109,6 +109,21 @@ app.put("/user", async (req, res) => {
   } else res.status(404).send("not found");
 });
 
+app.put("/add_action", async (request, response) => {
+  const { id, action } = request.body;
+  const user = await User.findById(id);
+  if (user) {
+    if (action.products.length === 0) {
+      response.status(402).send("empty");
+    } else {
+      user.actions.push(action);
+      user.save().then((savedUser) => {
+        response.send(savedUser);
+      });
+    }
+  } else response.status(404).send("not found");
+});
+
 app.listen(port, () => {
   console.log(`server is running on port ${port}`);
 });
