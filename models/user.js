@@ -1,4 +1,4 @@
-const { Schema, model } = require("mongoose");
+const { Schema, model, Types } = require("mongoose");
 
 const userSchema = new Schema({
   nom: String,
@@ -6,8 +6,8 @@ const userSchema = new Schema({
   poids: Number,
   taille: Number,
   date_naissance: Date,
-  maladies: Array,
-  allergies: Array,
+  maladies: [{ type: Types.ObjectId, ref: "maladie" }],
+  allergies: [{ type: Types.ObjectId, ref: "allergie" }],
   cree_le: { type: Date, default: Date.now },
   supprime_le: { type: Date, default: null },
   actions: Array,

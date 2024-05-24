@@ -4,6 +4,8 @@ const port = 2000;
 const { connect } = require("mongoose");
 const User = require("./models/user");
 const T = require("tesseract.js");
+const maladieRouter = require("./routes/maladie");
+const allergieRouter = require("./routes/allergie");
 
 app.use(express.json());
 
@@ -14,6 +16,9 @@ connect("mongodb://127.0.0.1:27017/VitamiNurseDB")
   .catch((error) => {
     console.log(error.message);
   });
+
+app.use("/maladie", maladieRouter);
+app.use("/allergie", allergieRouter);
 
 app.post("/register", (request, response) => {
   const {
@@ -44,7 +49,7 @@ app.post("/register", (request, response) => {
   user
     .save()
     .then((savedUser) => {
-      response.send(savedUser); //par défaut 200
+      response.send(savedUser.populate("maladies").populate("allergies")); //par défaut 200
     })
     .catch((error) => {
       response.status(500).send({ errorMessage: error.message });
@@ -53,7 +58,9 @@ app.post("/register", (request, response) => {
 
 app.post("/login", async (request, response) => {
   const { email, mot_passe } = request.body;
-  const user = await User.findOne({ email });
+  const user = await User.findOne({ email })
+    .populate("maladies")
+    .populate("allergies");
   if (user) {
     if (user.mot_passe === mot_passe) {
       response.send(user);
@@ -86,7 +93,9 @@ app.put("/user", async (req, res) => {
     tel,
   } = req.body;
 
-  const user = await User.findById(id);
+  const user = await User.findById(id)
+    .populate("maladies")
+    .populate("allergies");
   if (user) {
     Object.assign(user, {
       nom,
@@ -111,7 +120,9 @@ app.put("/user", async (req, res) => {
 
 app.put("/add_action", async (request, response) => {
   const { id, action } = request.body;
-  const user = await User.findById(id);
+  const user = await User.findById(id)
+    .populate("maladies")
+    .populate("allergies");
   if (user) {
     if (action.products.length === 0) {
       response.status(402).send("empty");
@@ -122,6 +133,10 @@ app.put("/add_action", async (request, response) => {
       });
     }
   } else response.status(404).send("not found");
+});
+
+app.post("/check_product_compatibility", async (request, response) => {
+  const { product, user } = request.body;
 });
 
 app.listen(port, () => {
