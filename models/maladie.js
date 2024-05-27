@@ -1,7 +1,10 @@
 const { Schema, model } = require("mongoose");
 
 const maladieSchema = new Schema({
-  nom: String,
+  name: String,
+  ocr: String,
+
+  max: Number,
 });
 
 const Maladie = model("maladie", maladieSchema);

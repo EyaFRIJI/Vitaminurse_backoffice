@@ -48,8 +48,17 @@ app.post("/register", (request, response) => {
 
   user
     .save()
-    .then((savedUser) => {
-      response.send(savedUser.populate("maladies").populate("allergies")); //par défaut 200
+    .then(async (savedUser) => {
+      try {
+        const u = await User.populate(savedUser, [
+          { path: "maladies" },
+          { path: "allergies" },
+        ]);
+        res.send(u);
+      } catch (error) {
+        console.log(error);
+        res.send({});
+      }
     })
     .catch((error) => {
       response.status(500).send({ errorMessage: error.message });
@@ -93,9 +102,8 @@ app.put("/user", async (req, res) => {
     tel,
   } = req.body;
 
-  const user = await User.findById(id)
-    .populate("maladies")
-    .populate("allergies");
+  const user = await User.findById(id);
+
   if (user) {
     Object.assign(user, {
       nom,
@@ -111,8 +119,17 @@ app.put("/user", async (req, res) => {
     });
     user
       .save()
-      .then((savedUser) => {
-        res.send(savedUser);
+      .then(async (savedUser) => {
+        try {
+          const u = await User.populate(savedUser, [
+            { path: "maladies" },
+            { path: "allergies" },
+          ]);
+          res.send(u);
+        } catch (error) {
+          console.log(error);
+          res.send({});
+        }
       })
       .catch((error) => res.status(500).send("error"));
   } else res.status(404).send("not found");
@@ -128,8 +145,17 @@ app.put("/add_action", async (request, response) => {
       response.status(402).send("empty");
     } else {
       user.actions.push(action);
-      user.save().then((savedUser) => {
-        response.send(savedUser);
+      user.save().then(async (savedUser) => {
+        try {
+          const u = await User.populate(savedUser, [
+            { path: "maladies" },
+            { path: "allergies" },
+          ]);
+          res.send(u);
+        } catch (error) {
+          console.log(error);
+          res.send({});
+        }
       });
     }
   } else response.status(404).send("not found");
@@ -137,6 +163,47 @@ app.put("/add_action", async (request, response) => {
 
 app.post("/check_product_compatibility", async (request, response) => {
   const { product, user } = request.body;
+  // allergie
+  var allergiesAdvices = [];
+  var maladiesAdvices = [];
+  const check_allergie = await product.allergens.map((allergie) => {
+    if (
+      user.allergies.find((ua) => {
+        return ua.name === allergie;
+      }) != null
+    ) {
+      allergiesAdvices.push({
+        message: `Fais attention tu as allergie du " ${allergie} "`,
+      });
+      return true;
+    } else return false;
+  });
+  const poids = product.packaging;
+
+  const check_maladies = await user.maladies.map((um) => {
+    if (product.ocr[um.ocr] == undefined) return false;
+    else {
+      const dose = parseFloat(product.ocr[user.maladies[0].ocr].split("/")[0]);
+      const echelle = parseFloat(
+        product.ocr[user.maladies[0].ocr].split("/")[1]
+      );
+      const value = (poids / echelle) * dose;
+
+      if (value > um.max) {
+        maladiesAdvices.push({
+          message: `Fais attention tu as la maladie " ${um.name} " et la quantité de " ${um.ocr} " est élevé `,
+        });
+        return true;
+      } else return false;
+    }
+  });
+
+  response.send({
+    allergies: !check_allergie.includes(true),
+    allergiesAdvices,
+    maladies: !check_maladies.includes(true),
+    maladiesAdvices,
+  });
 });
 
 app.listen(port, () => {

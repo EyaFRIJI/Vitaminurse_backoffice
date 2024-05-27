@@ -1,7 +1,7 @@
 const { Schema, model } = require("mongoose");
 
 const allergieSchema = new Schema({
-  nom: String,
+  name: String,
 });
 
 const Allergie = model("allergie", allergieSchema);

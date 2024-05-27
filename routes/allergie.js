@@ -8,8 +8,8 @@ router.get("/", async (request, response) => {
 });
 
 router.post("/", async (request, response) => {
-  const { nom } = request.body;
-  const allergie = new Allergie({ nom });
+  const { name } = request.body;
+  const allergie = new Allergie({ name });
   allergie.save().then((savedAllergie) => {
     response.send(savedAllergie);
   });
