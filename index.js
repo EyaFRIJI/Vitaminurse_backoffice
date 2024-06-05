@@ -54,10 +54,10 @@ app.post("/register", (request, response) => {
           { path: "maladies" },
           { path: "allergies" },
         ]);
-        res.send(u);
+        response.send(u);
       } catch (error) {
         console.log(error);
-        res.send({});
+        response.send({});
       }
     })
     .catch((error) => {
@@ -151,10 +151,10 @@ app.put("/add_action", async (request, response) => {
             { path: "maladies" },
             { path: "allergies" },
           ]);
-          res.send(u);
+          response.send(u);
         } catch (error) {
           console.log(error);
-          res.send({});
+          response.send({});
         }
       });
     }
@@ -173,7 +173,7 @@ app.post("/check_product_compatibility", async (request, response) => {
       }) != null
     ) {
       allergiesAdvices.push({
-        message: `Fais attention tu as allergie du " ${allergie} "`,
+        message: `Fais attention tu as allergie du " ${allergie} " et ce produit contient le " ${allergie} "`,
       });
       return true;
     } else return false;
