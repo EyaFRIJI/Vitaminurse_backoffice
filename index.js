@@ -1,4 +1,5 @@
 const express = require("express");
+const cors = require("cors");
 const app = express();
 const port = 2000;
 const { connect } = require("mongoose");
@@ -8,6 +9,7 @@ const maladieRouter = require("./routes/maladie");
 const allergieRouter = require("./routes/allergie");
 
 app.use(express.json());
+app.use(cors());
 
 connect("mongodb://127.0.0.1:27017/VitamiNurseDB")
   .then(() => {
@@ -85,6 +87,22 @@ app.post("/analyse_ocr", async (request, response) => {
   const produit = request.body.produit;
   const text = await T.recognize(produit.images[0], undefined, {});
   response.send(text.data.text);
+});
+
+app.get("/user", async (req, res) => {
+  const users = await User.find({ supprime_le: null });
+  res.send(users);
+});
+
+app.delete("/user", async (request, response) => {
+  const { id } = request.body;
+  const user = await User.findById(id);
+  if (user) {
+    user.supprime_le = new Date();
+    user.save().then((savedUser) => {
+      response.send(savedUser);
+    });
+  } else response.status(404).send("user not found");
 });
 
 app.put("/user", async (req, res) => {
