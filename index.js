@@ -83,6 +83,22 @@ app.post("/login", async (request, response) => {
   }
 });
 
+app.post("/adminlogin", async (request, response) => {
+  const { email, mot_passe } = request.body;
+  const user = await User.findOne({ email })
+    .populate("maladies")
+    .populate("allergies");
+  if (user) {
+    if (user.mot_passe === mot_passe && user.role === "admin") {
+      response.send(user);
+    } else {
+      response.status(403).send("mot de passe incorrecte");
+    }
+  } else {
+    response.status(404).send("email incorrecte");
+  }
+});
+
 app.post("/analyse_ocr", async (request, response) => {
   const produit = request.body.produit;
   const text = await T.recognize(produit.images[0], undefined, {});
